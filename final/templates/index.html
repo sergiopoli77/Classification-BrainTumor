@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brain Tumor Detection</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f0f4f8;
+        color: #333;
+        padding: 40px;
+      }
+
+      .main-container {
+        max-width: 1000px;
+        margin: auto;
+        background: #fff;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      header {
+        position: relative;
+        text-align: center;
+        margin-bottom: 40px;
+        background: #3498db;
+        padding: 20px;
+        border-radius: 16px;
+      }
+
+      header h1 {
+        font-size: 36px;
+        font-weight: bold;
+        color: #ffffff;
+        text-transform: uppercase;
+      }
+
+      .upload-result {
+        display: flex;
+        gap: 40px;
+        margin-bottom: 40px;
+      }
+
+      .upload-card,
+      .result-card {
+        flex: 1;
+        background-color: #f9fafb;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      .card-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #34495e;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .upload-area {
+        border: 2px dashed #3498db;
+        padding: 30px;
+        text-align: center;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .upload-area label {
+        display: block;
+        font-size: 16px;
+        color: #3498db;
+      }
+
+      .upload-area:hover {
+        background-color: #f9fafb;
+      }
+
+      #file-input {
+        display: none;
+      }
+
+      .preview-image {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+        margin-top: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .model-info {
+        background-color: #f9fafb;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+        text-align: center;
+      }
+
+      .model-info h3 {
+        font-size: 22px;
+        font-weight: bold;
+        color: #34495e;
+        margin-bottom: 15px;
+      }
+
+      .model-info ul {
+        list-style-type: none;
+      }
+
+      .model-info li {
+        font-size: 16px;
+        margin: 5px 0;
+      }
+
+      .ai-explanation {
+        background-color: #f9fafb;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        text-align: center;
+      }
+
+      .ai-explanation h3 {
+        font-size: 22px;
+        font-weight: bold;
+        color: #34495e;
+        margin-bottom: 15px;
+      }
+
+      .ai-explanation p {
+        font-size: 16px;
+        margin-bottom: 20px;
+        color: #7f8c8d;
+      }
+
+      .generate-btn {
+        background-color: #3498db;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .generate-btn:hover {
+        background-color: #3498db;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <!-- Header -->
+      <header>
+        <div class="header-box"></div>
+        <h1>AI-Based Brain Tumor Detection</h1>
+      </header>
+
+      <!-- Upload dan Hasil Foto -->
+      <section class="upload-result">
+        <div class="upload-card">
+          <p class="card-title">Unggah Gambar MRI Otak</p>
+          <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data">
+            <div class="upload-area">
+              <input type="file" id="file-input" name="file" />
+              <label for="file-input">Tambahkan gambar MRI di sini</label>
+            </div>
+            <button type="submit" class="generate-btn">Unggah dan Prediksi</button>
+          </form>
+        </div>
+        <div class="result-card">
+          <p class="card-title">Hasil Prediksi</p>
+          {% if prediction %}
+            <p><strong>Prediksi:</strong> {{ prediction }}</p>
+            <p><strong>Kepercayaan:</strong> {{ confidence }}</p>
+            <img src="{{ image_path }}" alt="Hasil Gambar" class="preview-image" />
+          {% else %}
+            <p>Unggah gambar untuk melihat hasil prediksi.</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Informasi Model -->
+      <section class="model-info">
+        <h3>Informasi Model</h3>
+        <ul>
+          <li><strong>Model:</strong> Model AI</li>
+          <li><strong>Akurasi:</strong> 98%</li>
+          <li><strong>Waktu Proses:</strong> 1 detik</li>
+        </ul>
+      </section>
+
+      <!-- Penjelasan AI -->
+      <section class="ai-explanation">
+        <h3>Penjelasan</h3>
+        {% if description %}
+          <div>{{ description|safe }}</div>
+        {% else %}
+          <p>Hasil analisis AI tentang gambar MRI yang diunggah akan muncul di sini.</p>
+        {% endif %}
+      </section>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const fileInput = document.getElementById("file-input");
+
+        fileInput.addEventListener("change", function () {
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function () {
+              const previewImage = document.createElement("img");
+              previewImage.src = reader.result;
+              previewImage.className = "preview-image";
+              document.querySelector(".upload-area").appendChild(previewImage);
+            };
+
+            reader.readAsDataURL(file);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
