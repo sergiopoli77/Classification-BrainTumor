@@ -31,21 +31,20 @@
         position: relative;
         text-align: center;
         margin-bottom: 40px;
-        background: linear-gradient(135deg, #3498db, #2ecc71);
+        background: #3498db;
         padding: 20px;
         border-radius: 16px;
-        color: #fff;
       }
 
       header h1 {
         font-size: 36px;
         font-weight: bold;
+        color: #ffffff;
         text-transform: uppercase;
       }
 
       .upload-result {
         display: flex;
-        flex-wrap: wrap;
         gap: 40px;
         margin-bottom: 40px;
       }
@@ -60,7 +59,7 @@
       }
 
       .card-title {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: bold;
         color: #34495e;
         text-align: center;
@@ -80,11 +79,10 @@
         display: block;
         font-size: 16px;
         color: #3498db;
-        margin-bottom: 10px;
       }
 
       .upload-area:hover {
-        background-color: #eaf6ff;
+        background-color: #f9fafb;
       }
 
       #file-input {
@@ -98,24 +96,6 @@
         margin-top: 20px;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-
-      .generate-btn {
-        background-color: #3498db;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 12px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: block;
-        margin: 20px auto 0;
-      }
-
-      .generate-btn:hover {
-        background-color: #2ecc71;
-        transform: scale(1.05);
       }
 
       .model-info {
@@ -136,7 +116,6 @@
 
       .model-info ul {
         list-style-type: none;
-        padding: 0;
       }
 
       .model-info li {
@@ -164,6 +143,23 @@
         margin-bottom: 20px;
         color: #7f8c8d;
       }
+
+      .generate-btn {
+        background-color: #3498db;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .generate-btn:hover {
+        background-color: #3498db;
+      }
     </style>
   </head>
   <body>
@@ -177,45 +173,79 @@
       <section class="upload-result">
         <div class="upload-card">
           <p class="card-title">Unggah Gambar MRI Otak</p>
-          <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data">
+          <form
+            action="{{ url_for('predict') }}"
+            method="POST"
+            enctype="multipart/form-data"
+          >
             <div class="upload-area">
               <input type="file" id="file-input" name="file" />
               <label for="file-input">Tambahkan gambar MRI di sini</label>
             </div>
-            <button type="submit" class="generate-btn">Unggah dan Prediksi</button>
+            <button type="submit" class="generate-btn">
+              Unggah dan Prediksi
+            </button>
           </form>
         </div>
         <div class="result-card">
           <p class="card-title">Hasil Prediksi</p>
           {% if prediction %}
-            <p><strong>Prediksi:</strong> {{ prediction }}</p>
-            <p><strong>Kepercayaan:</strong> {{ confidence }}</p>
-            <img src="{{ image_path }}" alt="Hasil Gambar" class="preview-image" />
+          <p><strong>Prediksi:</strong> {{ prediction }}</p>
+          <p><strong>Kepercayaan:</strong> {{ confidence }}</p>
+          <img
+            src="{{ image_path }}"
+            alt="Hasil Gambar"
+            class="preview-image"
+          />
+          <!-- Informasi Model -->
+          <section class="model-info">
+            <h3>Informasi Model</h3>
+            <ul>
+              <li><strong>Model:</strong> Model AI</li>
+              <li><strong>Akurasi:</strong> 98%</li>
+              <li><strong>Waktu Proses:</strong> 1 detik</li>
+            </ul>
+          </section>
           {% else %}
-            <p>Unggah gambar untuk melihat hasil prediksi.</p>
+          <p>Unggah gambar untuk melihat hasil prediksi.</p>
           {% endif %}
         </div>
-      </section>
-
-      <!-- Informasi Model -->
-      <section class="model-info">
-        <h3>Informasi Model</h3>
-        <ul>
-          <li><strong>Model:</strong> Model AI</li>
-          <li><strong>Akurasi:</strong> 98%</li>
-          <li><strong>Waktu Proses:</strong> 1 detik</li>
-        </ul>
       </section>
 
       <!-- Penjelasan AI -->
       <section class="ai-explanation">
         <h3>Penjelasan</h3>
         {% if description %}
-          <div>{{ description|safe }}</div>
+        <div>{{ description|safe }}</div>
         {% else %}
-          <p>Hasil analisis AI tentang gambar MRI yang diunggah akan muncul di sini.</p>
+        <p>
+          Hasil analisis AI tentang gambar MRI yang diunggah akan muncul di
+          sini.
+        </p>
         {% endif %}
       </section>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const fileInput = document.getElementById("file-input");
+
+        fileInput.addEventListener("change", function () {
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function () {
+              const previewImage = document.createElement("img");
+              previewImage.src = reader.result;
+              previewImage.className = "preview-image";
+              document.querySelector(".upload-area").appendChild(previewImage);
+            };
+
+            reader.readAsDataURL(file);
+          }
+        });
+      });
+    </script>
   </body>
 </html>
