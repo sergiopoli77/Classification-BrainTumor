@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Brain Tumor Classification</title>
+    <meta charset="UTF-8">
+    <title>YOLOv8 Prediction</title>
 </head>
 <body>
-    <h1>Upload Brain MRI</h1>
-    <form method="post" action="/predict" enctype="multipart/form-data">
-        <input type="file" name="file" required>
-        <input type="submit" value="Predict">
+    <h1>Upload Image for YOLOv8 Prediction</h1>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit">Predict</button>
     </form>
 
-    {% if prediction %}
-        <h2>Prediction: {{ prediction }}</h2>
-        <h3>Confidence: {{ confidence }}</h3>
-        <img src="{{ image_path }}" alt="Uploaded Image" width="300">
+    {% if result %}
+        <p>{{ result }}</p>
+        {% if result_image_path %}
+            <h3>Result:</h3>
+            <img src="{{ url_for('static', filename='uploads/result.jpg') }}" alt="Prediction Result" width="500">
+        {% endif %}
     {% endif %}
 </body>
 </html>
