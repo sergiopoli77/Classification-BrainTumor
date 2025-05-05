@@ -104,7 +104,7 @@
       {% endif %} {% if explanation %}
       <div class="explanation">
         <strong>Penjelasan Penyakit:</strong>
-        <p>{{ explanation }}</p>
+        <p>{{ explanation | safe }}</p>
       </div>
       {% endif %} {% endif %}
     </div>

@@ -3,6 +3,8 @@ from werkzeug.utils import secure_filename
 from ultralytics import YOLO
 import os
 import cv2
+import requests
+import markdown
 import google.generativeai as genai
 
 # Ambil API Key dari environment
@@ -12,42 +14,6 @@ if not api_key:
 else:
     print(f"Loaded API Key: {api_key[:5]}...")
 
-    # Debug: tampilkan model yang tersedia dan metode yang didukung
-    try:
-        genai.configure(api_key=api_key)
-        print("Daftar model Gemini yang tersedia:")
-        for model_info in genai.list_models():
-            print(f"- {model_info.name} -> {model_info.supported_generation_methods}")
-    except Exception as e:
-        print(f"Gagal memuat daftar model Gemini: {e}")
-
-# Fungsi untuk mengambil penjelasan penyakit
-def get_disease_explanation(labels):
-    if not api_key:
-        return "API key untuk Gemini tidak tersedia."
-
-    try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-pro')  # gunakan nama pendek, bukan 'models/...'
-
-        joined_labels = ', '.join(labels)
-        prompt = (
-            f"Saya memiliki hasil analisis gambar yang mendeteksi label sebagai berikut: {joined_labels}.\n\n"
-            "Berikan penjelasan singkat dan mudah dipahami oleh orang awam mengenai kemungkinan penyakit yang berkaitan dengan label-label tersebut. "
-            "Sertakan:\n"
-            "- Apa itu penyakit tersebut?\n"
-            "- Gejala umum\n"
-            "- Penyebab umum\n"
-            "- Apakah berbahaya atau tidak?\n"
-            "- Rekomendasi awal untuk penanganan atau konsultasi medis.\n"
-            "Gunakan bahasa Indonesia yang jelas dan ringkas."
-        )
-
-        response = model.generate_content(prompt)
-        return response.text.strip()
-
-    except Exception as e:
-        return f"Terjadi kesalahan saat mengakses Gemini API: {e}"
 
 # Konfigurasi Flask
 app = Flask(__name__, static_folder='static')
@@ -67,6 +33,58 @@ else:
     except Exception as e:
         print(f"Error loading model: {e}")
         model = None
+
+
+# Fungsi untuk mengambil penjelasan penyakit
+def get_llm_description(labels):
+    try:
+        # URL endpoint API Gemini
+        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+        
+        # Header untuk permintaan API
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        # Membuat prompt untuk dikirim ke Gemini API
+        prompt = (
+            f"Hasil prediksi menunjukkan kondisi: '{labels}'  "
+            f"Berikan analisis mendalam tentang kondisi ini, termasuk:\n\n"
+            f"1. Penjelasan umum tentang kondisi '{labels}'.\n"
+            f"2. Risiko atau dampak jika kondisi ini tidak ditangani.\n"
+            f"3. Saran awal untuk langkah-langkah yang dapat diambil mengobati atau mencegah Glaukoma jika.\n"
+            f"4. Kapan pengguna harus segera memeriksakan diri ke dokter mata.\n\n"
+            f"Selalu tekankan bahwa ini hanya informasi awal, konsultasi dokter sangat disarankan untuk dilakukan"
+        )
+
+        # Payload untuk permintaan API
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": prompt
+                        }
+                    ]
+                }
+            ]
+        }
+
+        # Mengirim permintaan POST ke API
+        response = requests.post(api_url, json=payload, headers=headers)
+        print("FULL JSON RESPONSE:", response.json())  # Debugging respons API
+
+        # Memproses respons API
+        if response.status_code == 200:
+            candidates = response.json().get("candidates", [{}])
+            explanation = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+            html_description = markdown.markdown(explanation)  # Mengubah teks menjadi HTML
+            return html_description
+        else:
+            return f"<p>Error: {response.status_code} - {response.text}</p>"
+    except Exception as e:
+        print(f"Error connecting to Gemini API: {e}")
+        return "<p>Terjadi kesalahan saat meminta penjelasan dari Gemini.</p>"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -96,9 +114,12 @@ def index():
                 cv2.imwrite(result_image_path, result_img)
 
                 labels = [model.names[int(cls)] for cls in results[0].boxes.cls]
-                prediction_result = f'Deteksi label: {", ".join(labels)}'
-
-                explanation = get_disease_explanation(labels)
+                if labels:
+                    prediction_result = f'Deteksi label: {", ".join(labels)}'
+                    explanation = get_llm_description(", ".join(labels))
+                else:
+                    prediction_result = "Tidak terdeteksi adanya penyakit pada gambar."
+                    explanation = "<p>Hasil deteksi menunjukkan tidak ada tanda-tanda penyakit yang teridentifikasi oleh tumor. Otak kemungkinan dalam kondisi <strong>normal</strong> atau tidak menunjukkan anomali visual yang dapat dideteksi secara otomatis.</p>"
 
     return render_template(
         'index.html',
