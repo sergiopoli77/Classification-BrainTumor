@@ -153,6 +153,8 @@
         font-weight: bold;
         cursor: pointer;
         transition: background-color 0.3s;
+        width: 100%;
+        margin-top: 10px;
       }
 
       .generate-btn:hover {
@@ -172,22 +174,32 @@
       <section class="upload-result">
         <div class="upload-card">
           <p class="card-title">Unggah Gambar MRI Otak</p>
-          <form action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data">
+          <form
+            action="{{ url_for('predict') }}"
+            method="POST"
+            enctype="multipart/form-data"
+          >
             <div class="upload-area">
               <input type="file" id="file-input" name="file" />
               <label for="file-input">Tambahkan gambar MRI di sini</label>
             </div>
-            <button type="submit" class="generate-btn">Unggah dan Prediksi</button>
+            <button type="submit" class="generate-btn">
+              Unggah dan Prediksi
+            </button>
           </form>
         </div>
         <div class="result-card">
           <p class="card-title">Hasil Prediksi</p>
           {% if prediction %}
-            <p><strong>Prediksi:</strong> {{ prediction }}</p>
-            <p><strong>Kepercayaan:</strong> {{ confidence }}</p>
-            <img src="{{ image_path }}" alt="Hasil Gambar" class="preview-image" />
+          <p><strong>Prediksi:</strong> {{ prediction }}</p>
+          <p><strong>Kepercayaan:</strong> {{ confidence }}</p>
+          <img
+            src="{{ image_path }}"
+            alt="Hasil Gambar"
+            class="preview-image"
+          />
           {% else %}
-            <p>Unggah gambar untuk melihat hasil prediksi.</p>
+          <p>Unggah gambar untuk melihat hasil prediksi.</p>
           {% endif %}
         </div>
       </section>
@@ -206,9 +218,12 @@
       <section class="ai-explanation">
         <h3>Penjelasan</h3>
         {% if description %}
-          <div>{{ description|safe }}</div>
+        <div>{{ description|safe }}</div>
         {% else %}
-          <p>Hasil analisis AI tentang gambar MRI yang diunggah akan muncul di sini.</p>
+        <p>
+          Hasil analisis AI tentang gambar MRI yang diunggah akan muncul di
+          sini.
+        </p>
         {% endif %}
       </section>
     </div>
