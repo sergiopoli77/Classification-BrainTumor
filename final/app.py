@@ -2,19 +2,6 @@ from flask import Flask, render_template, request, url_for
 from ultralytics import YOLO
 from werkzeug.utils import secure_filename
 import os
-import requests
-import markdown
-from dotenv import load_dotenv
-
-# Memuat variabel lingkungan dari file .env
-load_dotenv()
-
-# Mendapatkan API key dari file .env
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    print("Error: GEMINI_API_KEY tidak ditemukan di file .env")
-else:
-    print(f"Loaded API Key: {api_key[:5]}...")  # Menampilkan sebagian API key untuk keamanan
 
 # Inisialisasi aplikasi Flask
 app = Flask(__name__)
@@ -48,7 +35,13 @@ def predict_image(filepath):
     if len(predictions) > 0:
         predicted_class = int(predictions[0][5].item())  # Indeks kelas
         confidence = float(predictions[0][4].item())  # Confidence score
-        predicted_label = class_names[predicted_class]
+
+        # Validasi indeks kelas
+        if 0 <= predicted_class < len(class_names):
+            predicted_label = class_names[predicted_class]
+        else:
+            predicted_label = "Indeks kelas tidak valid"
+            confidence = 0.0
     else:
         predicted_label = "Tidak ada deteksi"
         confidence = 0.0
@@ -56,56 +49,9 @@ def predict_image(filepath):
     # Mengembalikan label prediksi dan tingkat keyakinan
     return predicted_label, confidence
 
-# Fungsi untuk mendapatkan deskripsi dari Gemini API berdasarkan hasil prediksi
+# Fungsi placeholder untuk deskripsi (tidak menggunakan Gemini API)
 def get_llm_description(predicted_label, confidence):
-    try:
-        # URL endpoint API Gemini
-        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-        
-        # Header untuk permintaan API
-        headers = {
-            "Content-Type": "application/json"
-        }
-
-        # Membuat prompt untuk dikirim ke Gemini API
-        prompt = (
-            f"Hasil prediksi menunjukkan kondisi: '{predicted_label}' dengan tingkat keyakinan {confidence*100:.2f}%. "
-            f"Berikan analisis mendalam tentang kondisi ini, termasuk:\n\n"
-            f"1. Penjelasan umum tentang kondisi '{predicted_label}'.\n"
-            f"2. Risiko atau dampak jika kondisi ini tidak ditangani.\n"
-            f"3. Saran awal untuk langkah-langkah yang dapat diambil.\n"
-            f"4. Kapan pengguna harus segera memeriksakan diri ke dokter.\n\n"
-            f"Selalu tekankan bahwa ini hanya informasi awal, konsultasi dokter sangat disarankan."
-        )
-
-        # Payload untuk permintaan API
-        payload = {
-            "contents": [
-                {
-                    "parts": [
-                        {
-                            "text": prompt
-                        }
-                    ]
-                }
-            ]
-        }
-
-        # Mengirim permintaan POST ke API
-        response = requests.post(api_url, json=payload, headers=headers)
-        print("FULL JSON RESPONSE:", response.json())  # Debugging respons API
-
-        # Memproses respons API
-        if response.status_code == 200:
-            candidates = response.json().get("candidates", [{}])
-            description = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-            html_description = markdown.markdown(description)  # Mengubah teks menjadi HTML
-            return html_description
-        else:
-            return f"<p>Error: {response.status_code} - {response.text}</p>"
-    except Exception as e:
-        print(f"Error connecting to Gemini API: {e}")
-        return "<p>Terjadi kesalahan saat meminta penjelasan dari Gemini.</p>"
+    return f"<p>Hasil prediksi menunjukkan kondisi: '{predicted_label}' dengan tingkat keyakinan {confidence*100:.2f}%.</p>"
 
 # Route untuk halaman utama
 @app.route('/')
