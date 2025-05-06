@@ -3,249 +3,130 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Brain Tumor Detection</title>
+    <title>YOLOv8 Brain Tumor Detector</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
       body {
-        font-family: "Arial", sans-serif;
-        background-color: #f0f4f8;
-        color: #333;
-        padding: 40px;
-      }
-
-      .main-container {
-        max-width: 1000px;
-        margin: auto;
-        background: #fff;
-        padding: 40px;
-        border-radius: 16px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      }
-
-      header {
-        position: relative;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(to right, #e3f2fd, #ffffff);
+        margin: 0;
+        padding: 40px 20px;
         text-align: center;
-        margin-bottom: 40px;
-        background: linear-gradient(135deg, #3498db, #2ecc71);
-        padding: 20px;
-        border-radius: 16px;
-        color: #fff;
       }
 
-      header h1 {
-        font-size: 36px;
-        font-weight: bold;
-        text-transform: uppercase;
+      h1 {
+        color: #0d47a1;
+        margin-bottom: 30px;
       }
 
-      .upload-result {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 40px;
-        margin-bottom: 40px;
-      }
-
-      .upload-card,
-      .result-card {
-        flex: 1;
-        background-color: #f9fafb;
+      .container {
+        background-color: white;
         padding: 30px;
         border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      }
-
-      .card-title {
-        font-size: 20px;
-        font-weight: bold;
-        color: #34495e;
-        text-align: center;
-        margin-bottom: 20px;
-      }
-
-      .upload-area {
-        border: 2px dashed #3498db;
-        padding: 30px;
-        text-align: center;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: 0.3s;
-      }
-
-      .upload-area label {
-        display: block;
-        font-size: 16px;
-        color: #3498db;
-        margin-bottom: 10px;
-      }
-
-      .upload-area:hover {
-        background-color: #eaf6ff;
-      }
-
-      #file-input {
-        display: none;
-      }
-
-      .preview-image {
-        width: 100%;
-        height: auto;
-        max-height: 300px;
-        margin-top: 20px;
-        border-radius: 8px;
+        display: inline-block;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-
-      .generate-btn {
-        background-color: #3498db;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 12px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: block;
-        margin: 20px auto 0;
-      }
-
-      .generate-btn:hover {
-        background-color: #2ecc71;
-        transform: scale(1.05);
-      }
-
-      .model-info {
-        background-color: #f9fafb;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        margin-bottom: 40px;
-        text-align: center;
-      }
-
-      .model-info h3 {
-        font-size: 22px;
-        font-weight: bold;
-        color: #34495e;
-        margin-bottom: 15px;
-      }
-
-      .model-info ul {
-        list-style-type: none;
-        padding: 0;
-      }
-
-      .model-info li {
-        font-size: 16px;
-        margin: 5px 0;
-      }
-
-      .ai-explanation {
-        background-color: #f9fafb;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        text-align: center;
-      }
-
-      .ai-explanation h3 {
-        font-size: 22px;
-        font-weight: bold;
-        color: #34495e;
-        margin-bottom: 15px;
-      }
-
-      .ai-explanation p {
-        font-size: 16px;
-        margin-bottom: 20px;
-        color: #7f8c8d;
-      }
-
-      .generate-btn {
-        background-color: #3498db;
-        color: white;
-        padding: 12px 30px;
-        border: none;
-        border-radius: 12px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s;
+        max-width: 600px;
         width: 100%;
-        margin-top: 10px;
       }
 
-      .generate-btn:hover {
-        background-color: #3498db;
+      input[type="file"] {
+        padding: 10px;
+        margin: 15px 0;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        width: 100%;
+      }
+
+      button {
+        background-color: #2196f3;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #1976d2;
+      }
+
+      img {
+        margin-top: 20px;
+        max-width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+      }
+
+      .explanation {
+        margin-top: 25px;
+        text-align: left;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #333;
+        padding: 15px;
+        background: #f1f8ff;
+        border-left: 5px solid #2196f3;
+        border-radius: 6px;
+      }
+
+      .result-text {
+        font-size: 18px;
+        color: #2e7d32;
+        font-weight: bold;
+        margin-top: 20px;
       }
     </style>
   </head>
   <body>
-    <div class="main-container">
-      <!-- Header -->
-      <header>
-        <h1>AI-Based Brain Tumor Detection</h1>
-      </header>
+    <h1>YOLOv8 Brain Tumor Detector</h1>
+    <div class="container">
+      <form method="post" enctype="multipart/form-data">
+        <input
+          type="file"
+          name="image"
+          id="imageInput"
+          accept="image/*"
+          required
+        />
+        <img id="preview" src="#" alt="Preview Gambar" style="display: none" />
+        <br />
+        <button type="submit">Prediksi Gambar</button>
+      </form>
 
-      <!-- Upload dan Hasil Foto -->
-      <section class="upload-result">
-        <div class="upload-card">
-          <p class="card-title">Unggah Gambar MRI Otak</p>
-          <form
-            action="{{ url_for('predict') }}"
-            method="POST"
-            enctype="multipart/form-data"
-          >
-            <div class="upload-area">
-              <input type="file" id="file-input" name="file" />
-              <label for="file-input">Tambahkan gambar MRI di sini</label>
-            </div>
-            <button type="submit" class="generate-btn">
-              Unggah dan Prediksi
-            </button>
-          </form>
-        </div>
-        <div class="result-card">
-          <p class="card-title">Hasil Prediksi</p>
-          {% if prediction %}
-          <p><strong>Prediksi:</strong> {{ prediction }}</p>
-          <p><strong>Kepercayaan:</strong> {{ confidence }}</p>
-          <img
-            src="{{ image_path }}"
-            alt="Hasil Gambar"
-            class="preview-image"
-          />
-          {% else %}
-          <p>Unggah gambar untuk melihat hasil prediksi.</p>
-          {% endif %}
-        </div>
-      </section>
-
-      <!-- Informasi Model -->
-      <section class="model-info">
-        <h3>Informasi Model</h3>
-        <ul>
-          <li><strong>Model:</strong> Model AI</li>
-          <li><strong>Akurasi:</strong> 98%</li>
-          <li><strong>Waktu Proses:</strong> 1 detik</li>
-        </ul>
-      </section>
-
-      <!-- Penjelasan AI -->
-      <section class="ai-explanation">
-        <h3>Penjelasan</h3>
-        {% if description %}
-        <div>{{ description|safe }}</div>
-        {% else %}
-        <p>
-          Hasil analisis AI tentang gambar MRI yang diunggah akan muncul di
-          sini.
-        </p>
-        {% endif %}
-      </section>
+      {% if result %}
+      <p class="result-text">{{ result }}</p>
+      {% if result_image_path %}
+      <img
+        src="{{ url_for('static', filename='uploads/result.jpg') }}"
+        alt="Hasil Deteksi"
+      />
+      {% endif %} {% if explanation %}
+      <div class="explanation">
+        <strong>Penjelasan Penyakit:</strong>
+        <p>{{ explanation | safe }}</p>
+      </div>
+      {% endif %} {% endif %}
     </div>
+
+    <script>
+      document
+        .getElementById("imageInput")
+        .addEventListener("change", function (event) {
+          const preview = document.getElementById("preview");
+          const file = event.target.files[0];
+
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              preview.src = e.target.result;
+              preview.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+          } else {
+            preview.style.display = "none";
+          }
+        });
+    </script>
   </body>
 </html>
